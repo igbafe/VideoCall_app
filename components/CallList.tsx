@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 "use client";
 import { useGetCalls } from "@/hooks/useGetCalls";
 import { Call, CallRecording } from "@stream-io/video-react-sdk";
@@ -27,12 +27,13 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
 
         setRecordings(fetchedRecordings);
       } catch (error) {
+        console.log(error);
         toast({title: 'Try again later'})
       }
     };
 
     if (type === "recordings") fetchRecordings();
-  }, [type, callRecordings]);
+  }, [type, callRecordings,toast]);
 
   const calls =
     type === "recordings"
@@ -55,7 +56,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
       {calls?.length > 0 ? (
         calls.map((meeting: Call | CallRecording) => (
           <MeetingCard
-            key={(meeting as Call)?.id || (meeting as CallRecording)?.id}
+            key={(meeting as Call)?.id || (meeting as CallRecording)?.filename}
             icon={
               type === "ended"
                 ? "/icons/previous.svg"
@@ -65,7 +66,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
             }
             title={
               (meeting as Call)?.state?.custom?.description?.substring(0, 20) ||
-              (meeting as CallRecording)?.fileName?.substring(0, 20) ||
+              (meeting as CallRecording)?.filename?.substring(0, 20) ||
               "Personal Room"
             }
             date={
@@ -77,13 +78,13 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
             buttonText={type === "recordings" ? "Play" : "Start"}
             handleClick={
               type === "recordings"
-                ? () => router.push(`${meeting.url}`)
-                : () => router.push(`/meeting/${meeting.id}`)
+                ? () => router.push(`${(meeting as CallRecording).url}`)
+                : () => router.push(`/meeting/${(meeting as Call).id}`)
             }
             link={
               type === "recordings"
-                ? meeting.url
-                : `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${meeting.id}`
+                ? (meeting as CallRecording).url
+                : `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${(meeting as Call).id}`
             }
           />
         ))
